@@ -32,7 +32,8 @@ const timeSeriesSources = [
 
 /**
  * Process the CSV readable passed and return an array of the headers and a table of the data.
- * @param {readable} csvReadable 
+ * This works for an arbitrary CSV and assumes that the first row is the header row.
+ * @param {readable} csvReadable Readable for initialized to the CSV file to process.
  * @returns {{'headers': Array<String>, 'data': Array<Array<String>>}}
  */
 async function processCSV(csvReadable) {
@@ -79,6 +80,10 @@ function writeJsonFile(fileDescription, jsonObj, filePath) {
  * @param {Array<{name: String, path: String, description: String}>} timeSeries  The Time Series source object describing the series being processed.
  */
 async function processTimeSeries(timeSeries) {
+    // Used to name the containing object for a row in the time series.
+    const PROVINCE_STATE = 'Province/State';
+    const COUNTRY_REGION = 'Country/Region';
+
     for (const series of timeSeries) {
         const timeSeriesObj = {};
 
@@ -90,7 +95,7 @@ async function processTimeSeries(timeSeries) {
             for (const [i, entry] of row.entries()) {
                 rowObj[headers[i]] = entry;
             }
-            const title = rowObj['Province/State'] ? `${rowObj['Country/Region']} - ${rowObj['Province/State']}` : rowObj['Country/Region'];
+            const title = rowObj[PROVINCE_STATE] ? `${rowObj[COUNTRY_REGION]} - ${rowObj[PROVINCE_STATE]}` : rowObj[COUNTRY_REGION];
             timeSeriesObj[title] = rowObj;
         }
         const jsonPath = path.join(__dirname, 'data', `${series.outputName}.json`);
